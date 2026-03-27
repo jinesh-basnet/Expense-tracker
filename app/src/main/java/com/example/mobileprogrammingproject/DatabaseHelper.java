@@ -27,7 +27,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_CATEGORY = "category";
     public static final String COLUMN_DESCRIPTION = "description";
     public static final String COLUMN_DATE = "date";
-    public static final String COLUMN_TYPE = "type"; // "income" or "expense"
+    public static final String COLUMN_TYPE = "type"; 
+    // Users table columns
+    public static final String TABLE_USERS = "users";
+    public static final String COLUMN_USER_NAME = "name";
+    public static final String COLUMN_USER_EMAIL = "email";
+    public static final String COLUMN_USER_PASSWORD = "password";
 
     private static final String CREATE_TRANSACTIONS_TABLE =
             "CREATE TABLE " + TABLE_TRANSACTIONS + "(" +
@@ -39,6 +44,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_TYPE + " TEXT NOT NULL" +
                     ")";
 
+    private static final String CREATE_USERS_TABLE =
+            "CREATE TABLE " + TABLE_USERS + "(" +
+                    COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    COLUMN_USER_NAME + " TEXT NOT NULL," +
+                    COLUMN_USER_EMAIL + " TEXT NOT NULL UNIQUE," +
+                    COLUMN_USER_PASSWORD + " TEXT NOT NULL" +
+                    ")";
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -46,21 +59,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TRANSACTIONS_TABLE);
+        db.execSQL(CREATE_USERS_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_TRANSACTIONS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
         onCreate(db);
     }
 
-    // save a new transaction to the db
     public long insertTransaction(Transaction transaction) {
         Log.d("DB_HELPER", "Inserting transaction: " + transaction.getCategory());
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
-        // simple conversion logic
         double amountVal = 0;
         try {
             amountVal = Double.parseDouble(transaction.getAmount());
@@ -79,7 +92,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return id;
     }
 
-    // get everything from the table
     public List<Transaction> getAllTransactions() {
         Log.d("DB_HELPER", "Fetching all transactions...");
         List<Transaction> transactionList = new ArrayList<>();
@@ -102,7 +114,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 double amount = cursor.getDouble(colAmount);
                 String category = cursor.getString(colCategory);
                 
-                // Get the description safely
                 int colDescription = cursor.getColumnIndex(COLUMN_DESCRIPTION);
                 String description = colDescription != -1 ? cursor.getString(colDescription) : "Transaction";
                 
@@ -121,11 +132,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return transactionList;
     }
 
-    // delete one row by id
     public void deleteTransaction(int id) {
         Log.d("DB_HELPER", "Deleting ID: " + id);
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_TRANSACTIONS, COLUMN_ID + " = ?", new String[]{String.valueOf(id)});
         db.close();
+    }
+
+
+    // register a new user
+    public long insertUser(String name, String email, String password) {
+        Log.d("DB_HELPER", "Registering new user: " + email);
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_USER_NAME, name);
+        values.put(COLUMN_USER_EMAIL, email);
+        values.put(COLUMN_USER_PASSWORD, password);
+
+        long id = db.insert(TABLE_USERS, null, values);
+        db.close();
+        return id;
+    }
+
+    // check user login
+    public boolean checkUser(String email, String password) {
+        Log.d("DB_HELPER", "Checking login for: " + email);
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_USERS + " WHERE " + COLUMN_USER_EMAIL + " = ? AND " + COLUMN_USER_PASSWORD + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{email, password});
+
+        boolean exists = (cursor.getCount() > 0);
+        cursor.close();
+        db.close();
+        return exists;
     }
 }
