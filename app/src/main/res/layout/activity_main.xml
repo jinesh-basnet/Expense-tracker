@@ -8,6 +8,18 @@
     android:background="#F5F5F5"
     tools:context=".MainActivity">
 
+    <ImageButton
+        android:id="@+id/btnLogout"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@android:drawable/ic_lock_power_off"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:padding="8dp"/>
+
     <androidx.cardview.widget.CardView
         android:id="@+id/cardBalance"
         android:layout_width="match_parent"
