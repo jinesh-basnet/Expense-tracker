@@ -1,6 +1,8 @@
 package com.example.mobileprogrammingproject;
 
-public class Transaction {
+import java.io.Serializable;
+
+public class Transaction implements Serializable {
     private int id;
     private String category;
     private String description;

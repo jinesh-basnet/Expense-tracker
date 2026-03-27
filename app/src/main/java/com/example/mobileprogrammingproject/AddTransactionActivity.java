@@ -22,6 +22,7 @@ public class AddTransactionActivity extends AppCompatActivity {
     private RadioGroup rgType;
     private Button btnSave;
     private DatabaseHelper databaseHelper;
+    private Transaction existingTransaction = null; 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +38,36 @@ public class AddTransactionActivity extends AppCompatActivity {
         rgType = findViewById(R.id.rgType);
         btnSave = findViewById(R.id.btnSave);
 
+        if (getIntent().hasExtra("transaction")) {
+            existingTransaction = (Transaction) getIntent().getSerializableExtra("transaction");
+            setTitle("Edit Transaction");
+            btnSave.setText("Update");
+            preFillFields();
+        }
+
         btnSave.setOnClickListener(v -> saveTransaction());
         etDate.setOnClickListener(v -> showDatePicker());
+    }
+
+    private void preFillFields() {
+        if (existingTransaction == null) return;
+        
+        etAmount.setText(existingTransaction.getAmount());
+        etDescription.setText(existingTransaction.getDescription());
+        etDate.setText(existingTransaction.getDate());
+        
+        if (existingTransaction.isExpense()) {
+            rgType.check(R.id.rbExpense);
+        } else {
+            rgType.check(R.id.rbIncome);
+        }
+        
+        for (int i = 0; i < spinnerCategory.getCount(); i++) {
+            if (spinnerCategory.getItemAtPosition(i).toString().equals(existingTransaction.getCategory())) {
+                spinnerCategory.setSelection(i);
+                break;
+            }
+        }
     }
 
     private void showDatePicker() {
@@ -64,7 +93,6 @@ public class AddTransactionActivity extends AppCompatActivity {
         String amount = etAmount.getText().toString().trim();
         String date = etDate.getText().toString().trim();
 
-        // basic validation
         if (amount.isEmpty() || date.isEmpty()) {
             Toast.makeText(this, "Empty fields!", Toast.LENGTH_SHORT).show();
             return;
@@ -83,14 +111,23 @@ public class AddTransactionActivity extends AppCompatActivity {
 
         Transaction transaction = new Transaction(category, description, amount, date, isExpense);
         
-        Log.d("ADD_TRANS", "Saving to database...");
-        long id = databaseHelper.insertTransaction(transaction);
-        
-        if (id > -1) {
-            Toast.makeText(this, "Saved!", Toast.LENGTH_SHORT).show();
-            finish(); 
+        if (existingTransaction != null) {
+            transaction.setId(existingTransaction.getId());
+            int rows = databaseHelper.updateTransaction(transaction);
+            if (rows > 0) {
+                Toast.makeText(this, "Updated!", Toast.LENGTH_SHORT).show();
+                finish();
+            } else {
+                Toast.makeText(this, "Update failed!", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            Log.e("ADD_TRANS", "Database error!");
+            long id = databaseHelper.insertTransaction(transaction);
+            if (id > -1) {
+                Toast.makeText(this, "Saved!", Toast.LENGTH_SHORT).show();
+                finish();
+            } else {
+                Log.e("ADD_TRANS", "Database error!");
+            }
         }
     }
 }

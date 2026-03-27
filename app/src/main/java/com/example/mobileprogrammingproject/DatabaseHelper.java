@@ -139,8 +139,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
+    public int updateTransaction(Transaction transaction) {
+        Log.d("DB_HELPER", "Updating transaction ID: " + transaction.getId());
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
 
-    // register a new user
+        double amountVal = 0;
+        try {
+            amountVal = Double.parseDouble(transaction.getAmount());
+        } catch (Exception e) {
+            Log.e("DB_HELPER", "Error parsing amount!");
+        }
+
+        values.put(COLUMN_AMOUNT, amountVal);
+        values.put(COLUMN_CATEGORY, transaction.getCategory());
+        values.put(COLUMN_DESCRIPTION, transaction.getDescription());
+        values.put(COLUMN_DATE, transaction.getDate());
+        values.put(COLUMN_TYPE, transaction.isExpense() ? "expense" : "income");
+
+        int rowsAffected = db.update(TABLE_TRANSACTIONS, values, COLUMN_ID + " = ?",
+                new String[]{String.valueOf(transaction.getId())});
+        db.close();
+        return rowsAffected;
+    }
+
+
     public long insertUser(String name, String email, String password) {
         Log.d("DB_HELPER", "Registering new user: " + email);
         SQLiteDatabase db = this.getWritableDatabase();
@@ -154,7 +177,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return id;
     }
 
-    // check user login
     public boolean checkUser(String email, String password) {
         Log.d("DB_HELPER", "Checking login for: " + email);
         SQLiteDatabase db = this.getReadableDatabase();
