@@ -44,7 +44,7 @@ public class LoginActivity extends AppCompatActivity {
                 boolean success = dbHelper.checkUser(email, pass);
                 if (success) {
                     Toast.makeText(LoginActivity.this, "Welcome back!", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                     startActivity(intent);
                     finish();
                 } else {
