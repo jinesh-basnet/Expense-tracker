@@ -50,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
         adapter = new TransactionAdapter(transactionList);
         recyclerView.setAdapter(adapter);
 
-        // Add Swipe to Delete
         androidx.recyclerview.widget.ItemTouchHelper itemTouchHelper = new androidx.recyclerview.widget.ItemTouchHelper(new androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback(0, androidx.recyclerview.widget.ItemTouchHelper.LEFT | androidx.recyclerview.widget.ItemTouchHelper.RIGHT) {
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
@@ -81,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
         fetchAndRefresh();
     }
 
-    // method to get data and update the UI
     private void fetchAndRefresh() {
         Log.d("MAIN", "Refreshing transaction list");
         transactionList.clear();
@@ -108,11 +106,9 @@ public class MainActivity extends AppCompatActivity {
                     income += amt;
                 }
             } catch (Exception e) {
-                // simple skip
             }
         }
         
-        // update the text views
         tvTotalBalance.setText(String.format("$%.2f", total));
         tvTotalIncome.setText(String.format("+$%.2f", income));
         tvTotalExpense.setText(String.format("-$%.2f", expense));
