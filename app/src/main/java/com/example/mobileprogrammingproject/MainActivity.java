@@ -119,8 +119,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         
-        tvTotalBalance.setText(String.format("$%.2f", total));
-        tvTotalIncome.setText(String.format("+$%.2f", income));
-        tvTotalExpense.setText(String.format("-$%.2f", expense));
+        tvTotalBalance.setText(String.format("NRS %.2f", total));
+        tvTotalIncome.setText(String.format("+NRS %.2f", income));
+        tvTotalExpense.setText(String.format("-NRS %.2f", expense));
     }
 }

@@ -69,6 +69,6 @@ public class HomeActivity extends AppCompatActivity {
                 }
             } catch (Exception e) {}
         }
-        tvHomeBalance.setText(String.format("$%.2f", total));
+        tvHomeBalance.setText(String.format("NRS %.2f", total));
     }
 }

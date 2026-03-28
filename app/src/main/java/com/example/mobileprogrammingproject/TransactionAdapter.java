@@ -34,12 +34,18 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         holder.tvDate.setText(transaction.getDate());
         
         if (transaction.isExpense()) {
-            holder.tvAmount.setText("-$" + transaction.getAmount());
+            holder.tvAmount.setText("-NRS " + transaction.getAmount());
             holder.tvAmount.setTextColor(Color.parseColor("#E53935")); // Red
         } else {
-            holder.tvAmount.setText("+$" + transaction.getAmount());
+            holder.tvAmount.setText("+NRS " + transaction.getAmount());
             holder.tvAmount.setTextColor(Color.parseColor("#4CAF50")); // Green
         }
+
+        holder.itemView.setOnClickListener(v -> {
+            android.content.Intent intent = new android.content.Intent(v.getContext(), AddTransactionActivity.class);
+            intent.putExtra("transaction", transaction); 
+            v.getContext().startActivity(intent);
+        });
     }
 
     @Override

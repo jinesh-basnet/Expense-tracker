@@ -2,4 +2,24 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <color name="primary">#4834D4</color>
+    <color name="primary_variant">#686DE0</color>
+    <color name="primary_dark">#30336B</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="secondary">#EB4D4B</color>
+    
+    <color name="screen_bg">#F6F9FC</color>
+    <color name="card_bg">#FFFFFF</color>
+    <color name="surface_variant">#E0E6ED</color>
+    
+    <color name="income_green">#00B894</color>
+    <color name="expense_red">#D63031</color>
+    
+    <color name="grad_start">#686DE0</color>
+    <color name="grad_end">#4834D4</color>
+    
+    <color name="text_main">#2D3436</color>
+    <color name="text_muted">#636E72</color>
+    <color name="text_on_dark">#F5F6FA</color>
 </resources>
