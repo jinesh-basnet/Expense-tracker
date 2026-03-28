@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
                 databaseHelper.deleteTransaction(transaction.getId());
                 transactionList.remove(position);
                 adapter.notifyItemRemoved(position);
-                fetchAndRefresh(); // update counters
+                fetchAndRefresh(); 
             }
         });
         itemTouchHelper.attachToRecyclerView(recyclerView);
@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
         ImageButton btnLogout = findViewById(R.id.btnLogout);
         btnLogout.setOnClickListener(v -> {
             Toast.makeText(MainActivity.this, "Logged out!", Toast.LENGTH_SHORT).show();
+            getSharedPreferences("user_prefs", MODE_PRIVATE).edit().remove("user_id").apply();
             startActivity(new Intent(MainActivity.this, LoginActivity.class));
             finish();
         });
@@ -91,13 +92,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void fetchAndRefresh() {
-        Log.d("MAIN", "Refreshing transaction list");
+        int userId = getSharedPreferences("user_prefs", MODE_PRIVATE).getInt("user_id", -1);
+        if (userId == -1) return;
+
+        Log.d("MAIN", "Refreshing transaction list for user: " + userId);
         transactionList.clear();
-        transactionList.addAll(databaseHelper.getAllTransactions());
+        transactionList.addAll(databaseHelper.getAllTransactions(userId));
         adapter.notifyDataSetChanged();
         
         calculateTotals();
     }
+
 
     private void calculateTotals() {
         Log.d("MAIN", "Recalculating totals...");

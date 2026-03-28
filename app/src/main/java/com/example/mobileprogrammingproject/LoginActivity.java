@@ -40,16 +40,22 @@ public class LoginActivity extends AppCompatActivity {
                     return;
                 }
 
-                // Check in db
-                boolean success = dbHelper.checkUser(email, pass);
-                if (success) {
+                int userId = dbHelper.checkUser(email, pass);
+                if (userId != -1) {
                     Toast.makeText(LoginActivity.this, "Welcome back!", Toast.LENGTH_SHORT).show();
+                    
+                    getSharedPreferences("user_prefs", MODE_PRIVATE)
+                        .edit()
+                        .putInt("user_id", userId)
+                        .apply();
+
                     Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                     startActivity(intent);
                     finish();
                 } else {
                     Toast.makeText(LoginActivity.this, "Invalid credentials!", Toast.LENGTH_SHORT).show();
                 }
+
             }
         });
 

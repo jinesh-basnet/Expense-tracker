@@ -32,7 +32,6 @@ public class HomeActivity extends AppCompatActivity {
         cardHistory = findViewById(R.id.cardHistory);
         btnHomeLogout = findViewById(R.id.btnHomeLogout);
 
-        // Standard actions
         cardAdd.setOnClickListener(v -> {
             startActivity(new Intent(HomeActivity.this, AddTransactionActivity.class));
         });
@@ -43,21 +42,35 @@ public class HomeActivity extends AppCompatActivity {
 
         btnHomeLogout.setOnClickListener(v -> {
             Toast.makeText(HomeActivity.this, "Signing out...", Toast.LENGTH_SHORT).show();
+            getSharedPreferences("user_prefs", MODE_PRIVATE).edit().remove("user_id").apply();
             startActivity(new Intent(HomeActivity.this, LoginActivity.class));
             finish();
         });
 
-        loadStats();
+        int userId = getSharedPreferences("user_prefs", MODE_PRIVATE).getInt("user_id", -1);
+        if (userId == -1) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
+
+        String name = dbHelper.getUserName(userId);
+        tvUserName.setText("Hi, " + name + "!");
+
+        loadStats(userId);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadStats();
+        int userId = getSharedPreferences("user_prefs", MODE_PRIVATE).getInt("user_id", -1);
+        if (userId != -1) {
+            loadStats(userId);
+        }
     }
 
-    private void loadStats() {
-        List<Transaction> list = dbHelper.getAllTransactions();
+    private void loadStats(int userId) {
+        List<Transaction> list = dbHelper.getAllTransactions(userId);
         double total = 0;
         for (Transaction t : list) {
             try {
@@ -71,4 +84,5 @@ public class HomeActivity extends AppCompatActivity {
         }
         tvHomeBalance.setText(String.format("NRS %.2f", total));
     }
+
 }

@@ -14,7 +14,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "expense_tracker.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     // Table names
     public static final String TABLE_TRANSACTIONS = "transactions";
@@ -27,7 +27,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_CATEGORY = "category";
     public static final String COLUMN_DESCRIPTION = "description";
     public static final String COLUMN_DATE = "date";
-    public static final String COLUMN_TYPE = "type"; 
+    public static final String COLUMN_TYPE = "type";
+    public static final String COLUMN_USER_ID_FK = "user_id"; // Foreign key
+
     // Users table columns
     public static final String TABLE_USERS = "users";
     public static final String COLUMN_USER_NAME = "name";
@@ -41,7 +43,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_CATEGORY + " TEXT," +
                     COLUMN_DESCRIPTION + " TEXT," +
                     COLUMN_DATE + " TEXT NOT NULL," +
-                    COLUMN_TYPE + " TEXT NOT NULL" +
+                    COLUMN_TYPE + " TEXT NOT NULL," +
+                    COLUMN_USER_ID_FK + " INTEGER NOT NULL" +
                     ")";
 
     private static final String CREATE_USERS_TABLE =
@@ -64,9 +67,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_TRANSACTIONS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
-        onCreate(db);
+        if (oldVersion < 2) {
+            db.execSQL("ALTER TABLE " + TABLE_TRANSACTIONS + " ADD COLUMN " + COLUMN_USER_ID_FK + " INTEGER DEFAULT 0");
+        }
     }
 
     public long insertTransaction(Transaction transaction) {
@@ -86,19 +89,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_DESCRIPTION, transaction.getDescription());
         values.put(COLUMN_DATE, transaction.getDate());
         values.put(COLUMN_TYPE, transaction.isExpense() ? "expense" : "income");
+        values.put(COLUMN_USER_ID_FK, transaction.getUserId()); // Added
 
         long id = db.insert(TABLE_TRANSACTIONS, null, values);
         db.close();
         return id;
     }
 
-    public List<Transaction> getAllTransactions() {
-        Log.d("DB_HELPER", "Fetching all transactions...");
+    public List<Transaction> getAllTransactions(int userId) {
+        Log.d("DB_HELPER", "Fetching transactions for user ID: " + userId);
         List<Transaction> transactionList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String query = "SELECT * FROM " + TABLE_TRANSACTIONS + " ORDER BY " + COLUMN_ID + " DESC";
-        Cursor cursor = db.rawQuery(query, null);
+        String query = "SELECT * FROM " + TABLE_TRANSACTIONS + 
+                      " WHERE " + COLUMN_USER_ID_FK + " = ?" +
+                      " ORDER BY " + COLUMN_ID + " DESC";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId)});
 
         if (cursor.moveToFirst()) {
             do {
@@ -107,6 +113,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 int colCategory = cursor.getColumnIndex(COLUMN_CATEGORY);
                 int colDate = cursor.getColumnIndex(COLUMN_DATE);
                 int colType = cursor.getColumnIndex(COLUMN_TYPE);
+                int colUserId = cursor.getColumnIndex(COLUMN_USER_ID_FK);
                 
                 if(colId == -1 || colAmount == -1 || colCategory == -1 || colDate == -1 || colType == -1) continue;
 
@@ -122,7 +129,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
                 boolean isExpense = "expense".equals(type);
                 
-                Transaction transaction = new Transaction(id, category, description, String.valueOf(amount), date, isExpense);
+                Transaction transaction = new Transaction(id, userId, category, description, String.valueOf(amount), date, isExpense);
                 transactionList.add(transaction);
             } while (cursor.moveToNext());
         }
@@ -156,6 +163,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_DESCRIPTION, transaction.getDescription());
         values.put(COLUMN_DATE, transaction.getDate());
         values.put(COLUMN_TYPE, transaction.isExpense() ? "expense" : "income");
+        values.put(COLUMN_USER_ID_FK, transaction.getUserId());
 
         int rowsAffected = db.update(TABLE_TRANSACTIONS, values, COLUMN_ID + " = ?",
                 new String[]{String.valueOf(transaction.getId())});
@@ -177,15 +185,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return id;
     }
 
-    public boolean checkUser(String email, String password) {
+    public int checkUser(String email, String password) {
         Log.d("DB_HELPER", "Checking login for: " + email);
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT * FROM " + TABLE_USERS + " WHERE " + COLUMN_USER_EMAIL + " = ? AND " + COLUMN_USER_PASSWORD + " = ?";
+        String query = "SELECT " + COLUMN_ID + " FROM " + TABLE_USERS + 
+                      " WHERE " + COLUMN_USER_EMAIL + " = ? AND " + COLUMN_USER_PASSWORD + " = ?";
         Cursor cursor = db.rawQuery(query, new String[]{email, password});
 
-        boolean exists = (cursor.getCount() > 0);
+        int userId = -1;
+        if (cursor.moveToFirst()) {
+            userId = cursor.getInt(0);
+        }
         cursor.close();
         db.close();
-        return exists;
+        return userId;
     }
+
+    public String getUserName(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT " + COLUMN_USER_NAME + " FROM " + TABLE_USERS + " WHERE " + COLUMN_ID + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId)});
+        String name = "User";
+        if (cursor.moveToFirst()) {
+            name = cursor.getString(0);
+        }
+        cursor.close();
+        db.close();
+        return name;
+    }
+
 }

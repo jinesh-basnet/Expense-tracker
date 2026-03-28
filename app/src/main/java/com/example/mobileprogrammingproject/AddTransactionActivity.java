@@ -109,7 +109,15 @@ public class AddTransactionActivity extends AppCompatActivity {
             isExpense = false;
         }
 
-        Transaction transaction = new Transaction(category, description, amount, date, isExpense);
+        int userId = getSharedPreferences("user_prefs", MODE_PRIVATE).getInt("user_id", -1);
+        if (userId == -1) {
+             Toast.makeText(this, "Session error!", Toast.LENGTH_SHORT).show();
+             return;
+        }
+
+        Transaction transaction = new Transaction(userId, category, description, amount, date, isExpense);
+
+
         
         if (existingTransaction != null) {
             transaction.setId(existingTransaction.getId());
