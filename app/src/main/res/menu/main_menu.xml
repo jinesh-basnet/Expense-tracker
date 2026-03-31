@@ -9,6 +9,16 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/action_statistics"
+        android:title="Statistics"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_currency"
+        android:title="Currency Converter"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_logout"
         android:title="Logout"
         app:showAsAction="never" />

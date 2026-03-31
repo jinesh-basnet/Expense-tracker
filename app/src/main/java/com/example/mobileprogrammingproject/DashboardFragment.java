@@ -32,6 +32,11 @@ public class DashboardFragment extends Fragment {
             if (getActivity() instanceof HomeActivity) ((HomeActivity) getActivity()).switchToTransactionFragment();
         });
 
+        view.findViewById(R.id.cardFragBudget).setOnClickListener(v -> startActivity(new Intent(getActivity(), BudgetSummaryActivity.class)));
+        view.findViewById(R.id.cardFragCategories).setOnClickListener(v -> startActivity(new Intent(getActivity(), CategoryGridActivity.class)));
+        view.findViewById(R.id.cardFragStats).setOnClickListener(v -> startActivity(new Intent(getActivity(), StatisticsActivity.class)));
+        view.findViewById(R.id.cardFragCurrency).setOnClickListener(v -> startActivity(new Intent(getActivity(), CurrencyConverterActivity.class)));
+
         return view;
     }
 

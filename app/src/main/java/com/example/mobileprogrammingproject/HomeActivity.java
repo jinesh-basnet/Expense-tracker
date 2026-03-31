@@ -78,6 +78,12 @@ public class HomeActivity extends AppCompatActivity {
         } else if (id == R.id.action_about) {
             Toast.makeText(this, "Expense Tracker v1.0\nDeveloped by Jinesh Basnet", Toast.LENGTH_LONG).show();
             return true;
+        } else if (id == R.id.action_statistics) {
+            startActivity(new Intent(this, StatisticsActivity.class));
+            return true;
+        } else if (id == R.id.action_currency) {
+            startActivity(new Intent(this, CurrencyConverterActivity.class));
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

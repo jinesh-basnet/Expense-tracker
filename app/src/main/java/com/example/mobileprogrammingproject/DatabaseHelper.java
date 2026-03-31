@@ -126,4 +126,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return name;
     }
+
+    public List<String[]> getCategoryTotals(int userId, boolean isExpense) {
+        List<String[]> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String type = isExpense ? "expense" : "income";
+        Cursor c = db.rawQuery("SELECT " + COLUMN_CATEGORY + ", SUM(" + COLUMN_AMOUNT + "), COUNT(*) FROM " + TABLE_TRANSACTIONS + " WHERE " + COLUMN_USER_ID_FK + " = ? AND " + COLUMN_TYPE + " = ? GROUP BY " + COLUMN_CATEGORY + " ORDER BY SUM(" + COLUMN_AMOUNT + ") DESC", new String[]{String.valueOf(userId), type});
+        if (c.moveToFirst()) {
+            do {
+                list.add(new String[]{c.getString(0), String.valueOf(c.getDouble(1)), String.valueOf(c.getInt(2))});
+            } while (c.moveToNext());
+        }
+        c.close();
+        db.close();
+        return list;
+    }
+
+    public List<String[]> getMonthlyStats(int userId) {
+        List<String[]> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT SUBSTR(" + COLUMN_DATE + ", 1, 7) AS month, SUM(CASE WHEN " + COLUMN_TYPE + " = 'income' THEN " + COLUMN_AMOUNT + " ELSE 0 END) AS inc, SUM(CASE WHEN " + COLUMN_TYPE + " = 'expense' THEN " + COLUMN_AMOUNT + " ELSE 0 END) AS exp FROM " + TABLE_TRANSACTIONS + " WHERE " + COLUMN_USER_ID_FK + " = ? GROUP BY month ORDER BY month DESC", new String[]{String.valueOf(userId)});
+        if (c.moveToFirst()) {
+            do {
+                list.add(new String[]{c.getString(0), String.valueOf(c.getDouble(1)), String.valueOf(c.getDouble(2))});
+            } while (c.moveToNext());
+        }
+        c.close();
+        db.close();
+        return list;
+    }
 }
