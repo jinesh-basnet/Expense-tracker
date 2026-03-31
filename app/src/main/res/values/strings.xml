@@ -1,14 +1,26 @@
 <resources>
     <string name="app_name">Mobile Programming Project</string>
-    <string-array name="categories">
+    <string-array name="expense_categories">
         <item>Food</item>
-        <item>Transport</item>
         <item>Shopping</item>
-        <item>Entertainment</item>
+        <item>Transport</item>
         <item>Bills</item>
+        <item>Entertainment</item>
         <item>Healthcare</item>
         <item>Education</item>
+        <item>Debt Payment</item>
+        <item>Other</item>
+    </string-array>
+
+    <string-array name="income_categories">
         <item>Salary</item>
+        <item>Bonus</item>
+        <item>Pocket Money</item>
+        <item>Investment</item>
+        <item>Business</item>
+        <item>Gift</item>
+        <item>Part-time</item>
+        <item>Refund</item>
         <item>Other</item>
     </string-array>
 </resources>

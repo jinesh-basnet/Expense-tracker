@@ -78,4 +78,14 @@
 
     </LinearLayout>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:layout_marginBottom="32dp"
+        android:text="Developed by Jinesh Basnet"
+        android:textColor="@color/text_muted"
+        android:textSize="12sp"
+        android:textStyle="bold|italic" />
+
 </FrameLayout>

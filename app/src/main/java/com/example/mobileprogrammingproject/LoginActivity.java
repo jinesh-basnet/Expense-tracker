@@ -2,69 +2,38 @@ package com.example.mobileprogrammingproject;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
+import android.util.Patterns;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
 
 public class LoginActivity extends AppCompatActivity {
-
-    private EditText etEmail, etPassword;
-    private Button btnLogin;
-    private TextView tvToRegister;
-    private DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        dbHelper = new DatabaseHelper(this);
+        DatabaseHelper db = new DatabaseHelper(this);
+        EditText etE = findViewById(R.id.etLoginEmail), etP = findViewById(R.id.etLoginPassword);
 
-        etEmail = findViewById(R.id.etLoginEmail);
-        etPassword = findViewById(R.id.etLoginPassword);
-        btnLogin = findViewById(R.id.btnLogin);
-        tvToRegister = findViewById(R.id.tvToRegister);
-
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String email = etEmail.getText().toString().trim();
-                String pass = etPassword.getText().toString().trim();
-
-                if (email.isEmpty() || pass.isEmpty()) {
-                    Toast.makeText(LoginActivity.this, "Fill in your email and password!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                int userId = dbHelper.checkUser(email, pass);
-                if (userId != -1) {
-                    Toast.makeText(LoginActivity.this, "Welcome back!", Toast.LENGTH_SHORT).show();
-                    
-                    getSharedPreferences("user_prefs", MODE_PRIVATE)
-                        .edit()
-                        .putInt("user_id", userId)
-                        .apply();
-
-                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                    startActivity(intent);
+        findViewById(R.id.btnLogin).setOnClickListener(v -> {
+            String e = etE.getText().toString().trim(), p = etP.getText().toString().trim();
+            
+            if (e.isEmpty() || p.isEmpty()) {
+                Toast.makeText(this, "Fields cannot be empty", Toast.LENGTH_SHORT).show();
+            } else if (!Patterns.EMAIL_ADDRESS.matcher(e).matches()) {
+                Toast.makeText(this, "Enter a valid email (e.g. user@gmail.com)", Toast.LENGTH_SHORT).show();
+            } else {
+                int uid = db.checkUser(e, p);
+                if (uid != -1) {
+                    getSharedPreferences("user_prefs", MODE_PRIVATE).edit().putInt("user_id", uid).apply();
+                    startActivity(new Intent(this, HomeActivity.class));
                     finish();
-                } else {
-                    Toast.makeText(LoginActivity.this, "Invalid credentials!", Toast.LENGTH_SHORT).show();
-                }
-
+                } else Toast.makeText(this, "Invalid Email or Password", Toast.LENGTH_SHORT).show();
             }
         });
 
-        tvToRegister.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-                startActivity(intent);
-            }
-        });
+        findViewById(R.id.tvToRegister).setOnClickListener(v -> startActivity(new Intent(this, RegisterActivity.class)));
     }
 }

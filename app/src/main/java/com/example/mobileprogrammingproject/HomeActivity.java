@@ -1,88 +1,84 @@
 package com.example.mobileprogrammingproject;
 
+
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.ImageButton;
-import android.widget.TextView;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
-
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-
-import java.util.List;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class HomeActivity extends AppCompatActivity {
 
-    private TextView tvUserName, tvHomeBalance;
-    private CardView cardAdd, cardHistory;
-    private ImageButton btnHomeLogout;
-    private DatabaseHelper dbHelper;
+    private BottomNavigationView bottomNav;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        dbHelper = new DatabaseHelper(this);
+        Toolbar toolbar = findViewById(R.id.toolbarHome);
+        setSupportActionBar(toolbar);
 
-        tvUserName = findViewById(R.id.tvUserName);
-        tvHomeBalance = findViewById(R.id.tvHomeBalance);
-        cardAdd = findViewById(R.id.cardAdd);
-        cardHistory = findViewById(R.id.cardHistory);
-        btnHomeLogout = findViewById(R.id.btnHomeLogout);
+        bottomNav = findViewById(R.id.bottomNav);
+        loadFragment(new DashboardFragment());
 
-        cardAdd.setOnClickListener(v -> {
-            startActivity(new Intent(HomeActivity.this, AddTransactionActivity.class));
-        });
+        bottomNav.setOnItemSelectedListener(item -> {
+            Fragment selected = null;
+            int id = item.getItemId();
+            if (id == R.id.nav_home) selected = new DashboardFragment();
+            else if (id == R.id.nav_transactions) selected = new TransactionFragment();
 
-        cardHistory.setOnClickListener(v -> {
-            startActivity(new Intent(HomeActivity.this, MainActivity.class));
-        });
-
-        btnHomeLogout.setOnClickListener(v -> {
-            Toast.makeText(HomeActivity.this, "Signing out...", Toast.LENGTH_SHORT).show();
-            getSharedPreferences("user_prefs", MODE_PRIVATE).edit().remove("user_id").apply();
-            startActivity(new Intent(HomeActivity.this, LoginActivity.class));
-            finish();
+            if (selected != null) {
+                loadFragment(selected);
+                return true;
+            }
+            return false;
         });
 
         int userId = getSharedPreferences("user_prefs", MODE_PRIVATE).getInt("user_id", -1);
         if (userId == -1) {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
-            return;
         }
+    }
 
-        String name = dbHelper.getUserName(userId);
-        tvUserName.setText("Hi, " + name + "!");
+    private void loadFragment(Fragment fragment) {
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+    }
 
-        loadStats(userId);
+    public void switchToTransactionFragment() {
+        bottomNav.setSelectedItemId(R.id.nav_transactions);
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        int userId = getSharedPreferences("user_prefs", MODE_PRIVATE).getInt("user_id", -1);
-        if (userId != -1) {
-            loadStats(userId);
-        }
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
     }
 
-    private void loadStats(int userId) {
-        List<Transaction> list = dbHelper.getAllTransactions(userId);
-        double total = 0;
-        for (Transaction t : list) {
-            try {
-                double amt = Double.parseDouble(t.getAmount());
-                if (t.isExpense()) {
-                    total -= amt;
-                } else {
-                    total += amt;
-                }
-            } catch (Exception e) {}
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_logout) {
+            getSharedPreferences("user_prefs", MODE_PRIVATE).edit().remove("user_id").apply();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return true;
+        } else if (id == R.id.action_refresh) {
+            Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            if (current instanceof DashboardFragment) loadFragment(new DashboardFragment());
+            else if (current instanceof TransactionFragment) loadFragment(new TransactionFragment());
+            Toast.makeText(this, "Refreshed", Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (id == R.id.action_about) {
+            Toast.makeText(this, "Expense Tracker v1.0\nDeveloped by Jinesh Basnet", Toast.LENGTH_LONG).show();
+            return true;
         }
-        tvHomeBalance.setText(String.format("NRS %.2f", total));
+        return super.onOptionsItemSelected(item);
     }
-
 }
